@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.clase18_10.adapter.AlumnoAdapter
 import com.example.clase18_10.dataBase.AppDatabase
-import com.example.clase18_10.model.Alumno
 import com.example.clase18_10.repository.AlumnoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,19 +29,21 @@ class MainActivity : AppCompatActivity() {
         val db = AppDatabase.getDatabase(this)
         repository = AlumnoRepository(db.alumnoDao())
 
-        // Limpiar la tabla e insertar el alumno en el repositorio
-        lifecycleScope.launch(Dispatchers.IO) {
-            repository.clearAndInsertAlumno(
-                Alumno(0, "Juan", "Pérez", "Buenos Aires", "1000")
-            )
+        //  lista mutable vacía
+        alumnoAdapter = AlumnoAdapter(mutableListOf())
+        recyclerView.adapter = alumnoAdapter
 
-            // Obtener los alumnos desde el repositorio y mostrarlos en el RecyclerView
-            val alumnosList = repository.getAllAlumnos()
+        // Cargar alumnos iniciales desde el repositorio
+        lifecycleScope.launch(Dispatchers.IO) {
+            repository.clearAndInsertInitialAlumnos()  // Limpiar e insertar alumnos iniciales
+            val alumnosList = repository.getAllAlumnos()  // Obtener todos los alumnos
+
+            // Refrescar el adaptador
             runOnUiThread {
-                alumnoAdapter = AlumnoAdapter(alumnosList)
-                recyclerView.adapter = alumnoAdapter
+                alumnoAdapter.updateData(alumnosList)  // actualizar el adaptador
             }
         }
     }
 }
+
 
